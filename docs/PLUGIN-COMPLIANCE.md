@@ -6,10 +6,10 @@
 | --- | --- | --- |
 | 发行格式 | ZIP 格式的 `.fish-plugin` | `npm run verify` 解压并校验文件集合 |
 | 清单版本 | `schema: 1`、`hostApi: 1` | `plugin.json` 与验包断言 |
-| npm 包名 | `fish-dock-plugin-rayburst`，符合宿主第三方发现命名规则；尚未发布 npm | 包名测试 |
+| npm 包名 | `fish-dock-plugin-rayburst`，符合宿主第三方发现命名规则；已按 `files` 白名单可发布 | 包名与发布形状测试 |
 | 插件标识 | `says693.rayburst` | 后端握手、页面 ticket 与协议测试一致 |
 | 目标平台 | `windows-x86_64` | 清单、CI 与 Release 均使用 Windows |
-| Node 运行时 | 22.17.0 或更新 | `engines.node`，CI 固定 22.17.0 |
+| Node 运行时 | Node.js 24（宿主随包提供；2.3.x 只接受 24） | `engines.node`，CI 固定 24 |
 | 自启动 | 不启动或管理本机服务，显式声明 `behaviors.autostart: false` | 验包测试 |
 | 页面设计 | 宿主主题、语义状态色、焦点与强制颜色模式 | 页面样式与键盘操作测试；真实 WebView 待验收 |
 | SDK 入口 | 现行 `createPlugin` | 真实 SDK 子进程握手测试 |
@@ -29,7 +29,7 @@
 | SDK 许可 | 原样保留 `sdk/LICENSE.txt` | 运行包与源码包检查 |
 | 可复现构建 | ZIP 固定 mtime，开发依赖不进入运行包 | 连续构建哈希比较 |
 | 商店目录 | Release 生成 schema 1 `catalog.json` | 校验 ID、版本、平台、URL、大小与哈希 |
-| CI | Windows 上执行检查、25 项测试、构建和验包 | `.github/workflows/ci.yml` |
+| CI | Windows 上执行检查、26 项测试、构建和验包 | `.github/workflows/ci.yml` |
 | Release | `v*` 标签触发，重新构建并上传五项资产 | `.github/workflows/release.yml` |
 
 ## 发布文件

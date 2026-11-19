@@ -48,3 +48,15 @@ test('npm 包名符合宿主第三方插件发现规则', () => {
   assert.equal(lock.name, packageJson.name)
   assert.equal(lock.packages[''].name, packageJson.name)
 })
+
+test('npm 包可按发布形状被宿主商店发现', () => {
+  const packageJson = JSON.parse(fs.readFileSync(path.join(root, 'package.json'), 'utf8'))
+  assert.equal(packageJson.private, undefined, 'private 包无法被宿主商店发现')
+  assert.deepEqual(packageJson.os, ['win32'])
+  assert.equal(packageJson.repository.url, 'git+https://github.com/says693/fish-dock-plugin-rayburst.git')
+  assert.equal(packageJson.engines.node, '>=24.0.0')
+  const covered = name => packageJson.files.some(entry => entry === name || (entry.endsWith('/') && name.startsWith(entry)))
+  for (const name of ['plugin.json', 'README.md', 'LICENSE', 'THIRD_PARTY_NOTICES.md', 'backend.mjs', 'rayburst-service.mjs', 'page.html', 'page.css', 'page.js', 'page-utils.js', 'sdk/node/plugin.mjs', 'sdk/browser/bridge.js', 'sdk/LICENSE.txt']) {
+    assert.ok(covered(name), `npm files 未覆盖 ${name}`)
+  }
+})

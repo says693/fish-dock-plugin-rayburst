@@ -17,7 +17,7 @@ assert.equal(plugin.version, version)
 assert.equal(pkg.version, version)
 assert.equal(metadata.version, version)
 assert.equal(catalog.plugins[0].version, version)
-assert.equal(metadata.package.url, `https://github.com/says693/rayburst-fish-plugin/releases/download/${tag}/rayburst.fish-plugin`)
+assert.equal(metadata.package.url, `https://github.com/says693/fish-dock-plugin-rayburst/releases/download/${tag}/rayburst.fish-plugin`)
 
 const changelog = fs.readFileSync(path.join(root, 'CHANGELOG.md'), 'utf8')
 const heading = `## [${version}]`

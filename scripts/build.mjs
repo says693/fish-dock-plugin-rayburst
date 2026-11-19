@@ -5,7 +5,7 @@ import { fileURLToPath } from 'node:url'
 import { zipSync } from 'fflate'
 
 const ROOT = path.resolve(fileURLToPath(new URL('../', import.meta.url)))
-const REPOSITORY = 'https://github.com/says693/rayburst-fish-plugin'
+const REPOSITORY = 'https://github.com/says693/fish-dock-plugin-rayburst'
 const RUNTIME_FILES = [
   'README.md',
   'LICENSE',

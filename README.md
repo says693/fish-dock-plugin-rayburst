@@ -1,7 +1,7 @@
 # Rayburst 下载 · FISH-Dock 插件
 
-[![CI](https://github.com/says693/rayburst-fish-plugin/actions/workflows/ci.yml/badge.svg)](https://github.com/says693/rayburst-fish-plugin/actions/workflows/ci.yml)
-[![Release](https://img.shields.io/github/v/release/says693/rayburst-fish-plugin)](https://github.com/says693/rayburst-fish-plugin/releases/latest)
+[![CI](https://github.com/says693/fish-dock-plugin-rayburst/actions/workflows/ci.yml/badge.svg)](https://github.com/says693/fish-dock-plugin-rayburst/actions/workflows/ci.yml)
+[![Release](https://img.shields.io/github/v/release/says693/fish-dock-plugin-rayburst)](https://github.com/says693/fish-dock-plugin-rayburst/releases/latest)
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 
 在 FISH-Dock 中直接管理 [AnInsomniacy/rayburst](https://github.com/AnInsomniacy/rayburst) 下载器。插件通过 Rayburst 本机 aria2 JSON-RPC 工作，不经过第三方服务器。
@@ -24,14 +24,14 @@
 
 - Windows x64。
 - FISH-Dock 2.2.0 或更新版本，宿主插件 API 1。
-- 在 FISH-Dock 的插件依赖设置中配置 Node.js 22.17.0 或更新运行时。
+- 在 FISH-Dock 的插件依赖设置中使用 Node.js 24 运行时（宿主随包提供；2.3.x 只接受 24）。
 - Rayburst 正在运行；插件不会替你启动或关闭 Rayburst。
 
 接口依据：FISH-Dock 源码提交 `0626a19`，Rayburst 源码提交 `0c880e5`。Rayburst 默认 RPC 地址为 `127.0.0.1:29100/jsonrpc`。
 
 ## 安装与配置
 
-1. 从 [v1.0.0 Release](https://github.com/says693/rayburst-fish-plugin/releases/tag/v1.0.0) 下载 `rayburst.fish-plugin`。
+1. 从 [最新 Release](https://github.com/says693/fish-dock-plugin-rayburst/releases/latest) 下载 `rayburst.fish-plugin`。
 2. 在 FISH-Dock 插件页导入该文件。
 3. 打开 Rayburst「设置 → 高级 → RPC 设置」，确认 RPC 端口并复制 RPC 密钥。
 4. 打开 Dock 中的「Rayburst 下载 → 连接设置」，填写端口和密钥，点击「保存并测试」。
@@ -49,7 +49,7 @@ Release 同时提供：
 | `catalog.json` | FISH-Dock 商店目录 schema 1 兼容元数据 |
 | `SHA256SUMS.txt` | 上述发布文件的校验值 |
 
-npm 包名按宿主第三方发现规则使用 `fish-dock-plugin-rayburst`。当前项目标记为 private，尚未发布 npm 包，不能通过 npm 商店安装。
+npm 包名按宿主第三方发现规则使用 `fish-dock-plugin-rayburst`。包已移除 `private` 并按 `files` 白名单打包运行资源，发布到 npm 后可直接在宿主商店检索安装；在发布前请继续使用 Release 中的 `.fish-plugin` 手动导入。
 
 `catalog.json` 仅表示元数据格式兼容，不表示插件已被 FISH-Dock 官方商店收录。
 

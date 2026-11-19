@@ -29,14 +29,14 @@
     }
   ],
   "files": {
-    "README.md": "0ed76d171c8f7499081a14aa5c2fe0ecb9afa94cb59474d283e27f79b0fdf739",
+    "README.md": "70fd3485d1a087854077d9af73e67ce7157a5e34e04ca01856a9471580d6136c",
     "LICENSE": "db8b4b053ee107d49f22c15cf56117638afb3575c81fcd7188d272c9a90de345",
     "THIRD_PARTY_NOTICES.md": "b0315a6ec1861ba5996d34925d0f34d217fcc1d655df75e3a7d784fcd8fdb38d",
     "backend.mjs": "541da0db9a0e05d07452b9a2420be2694a27e752ecc0511fbc52840882eacb2c",
     "rayburst-service.mjs": "6d0cfddf31b9c926b42f63ac082626423d01e5182a26be2c1b0b11765f8d80c0",
     "page.html": "399ad236b4179d36cb09caf0157d527da886a58a1459f8f216d8dd2192c2facd",
-    "page.css": "5ec8c6ed8571d14fbf5c946de753ad61c787d92d6cdc3368e66ec92785ef5e28",
-    "page.js": "8de5929ccacb06e7fbedc875e58b55899eb292238a483fbb6011ab0113d0dfc9",
+    "page.css": "3aa05fdd085f9a22b35ac8b40cae878d7f5aa68016ceda6ae71b9c824869e5e5",
+    "page.js": "3d738c0ef14f2e7fcda1487c80f592550fa8d2d14a2d144a02255b40540e6eb6",
     "page-utils.js": "116c8181a5a5932da16726e718152bcd66d5ac1200e22ff1313893ef170129c6",
     "sdk/node/plugin.mjs": "f51558b6f4be03b957977f85eb2550283f0556e311a249c7b8f8e90870327b64",
     "sdk/browser/bridge.js": "0d780e594bdf368fab6b8b43fe299e93fed4621161108ee3cf64c446cff3a39b",
