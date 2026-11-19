@@ -6,7 +6,7 @@
 | --- | --- | --- |
 | 发行格式 | ZIP 格式的 `.fish-plugin` | `npm run verify` 解压并校验文件集合 |
 | 清单版本 | `schema: 1`、`hostApi: 1` | `plugin.json` 与验包断言 |
-| npm 包名 | `fish-dock-plugin-rayburst@1.0.1`，已发布并符合宿主第三方发现命名规则 | 包名与发布形状测试，registry 元数据核对 |
+| npm 包名 | `fish-dock-plugin-rayburst@1.0.2`，已发布并符合宿主第三方发现命名规则 | 包名与发布形状测试，registry 元数据核对 |
 | 插件标识 | `says693.rayburst` | 后端握手、页面 ticket 与协议测试一致 |
 | 目标平台 | `windows-x86_64` | 清单、CI 与 Release 均使用 Windows |
 | Node 运行时 | Node.js 24（宿主随包提供；2.3.x 只接受 24） | `engines.node`，CI 固定 24 |
@@ -15,7 +15,7 @@
 | SDK 入口 | 现行 `createPlugin` | 真实 SDK 子进程握手测试 |
 | 宿主协议 | 换行 JSON、请求 ID、稳定错误码 | `tests/protocol.test.mjs` |
 | 帧大小 | 快照压缩至 850,000 字节以内 | 超长中文任务快照测试 |
-| 运行资源 | 12 个文件逐项记录 SHA-256 | 独立验包重新计算摘要 |
+| 运行资源 | 13 个文件（含 `package.json`）逐项记录 SHA-256 | 独立验包重新计算摘要 |
 | 文件集合 | ZIP 仅包含 `plugin.json` 与已声明资源 | 验包比较完整路径集合 |
 | 路径安全 | 无绝对路径、反斜杠或 `..` | `scripts/verify-package.mjs` |
 | 当前文档 | 运行包含 README、LICENSE、第三方声明 | 构建列表与验包断言 |

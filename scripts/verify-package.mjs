@@ -41,7 +41,7 @@ assert.equal(manifest.backend.runtime, 'node')
 assert.ok(manifest.files[manifest.backend.entry])
 assert.ok(manifest.pages.length > 0)
 for (const page of manifest.pages) assert.ok(manifest.files[page.entry], `缺少页面资源 ${page.entry}`)
-for (const required of ['README.md', 'LICENSE', 'THIRD_PARTY_NOTICES.md', 'sdk/LICENSE.txt']) assert.ok(manifest.files[required], `缺少 ${required}`)
+for (const required of ['package.json', 'README.md', 'LICENSE', 'THIRD_PARTY_NOTICES.md', 'sdk/LICENSE.txt']) assert.ok(manifest.files[required], `缺少 ${required}`)
 assert.deepEqual(names.sort(), ['plugin.json', ...Object.keys(manifest.files)].sort())
 assert.equal(metadata.resources, Object.keys(manifest.files).length)
 for (const [name, expected] of Object.entries(manifest.files)) {

@@ -6,7 +6,7 @@
 
 在 FISH-Dock 中直接管理 [AnInsomniacy/rayburst](https://github.com/AnInsomniacy/rayburst) 下载器。插件通过 Rayburst 本机 aria2 JSON-RPC 工作，不经过第三方服务器。
 
-> 非官方 Rayburst 集成。插件 ID：`says693.rayburst`；当前源码版本：`1.0.1`；宿主 API：1；平台：Windows x64。
+> 非官方 Rayburst 集成。插件 ID：`says693.rayburst`；当前源码版本：`1.0.2`；宿主 API：1；平台：Windows x64。
 
 ## 功能
 
@@ -49,7 +49,7 @@ Release 同时提供：
 | `catalog.json` | FISH-Dock 商店目录 schema 1 兼容元数据 |
 | `SHA256SUMS.txt` | 上述发布文件的校验值 |
 
-npm 包名按宿主第三方发现规则使用 `fish-dock-plugin-rayburst`。包已移除 `private` 并按 `files` 白名单打包运行资源，发布到 npm 后可直接在宿主商店检索安装；在发布前请继续使用 Release 中的 `.fish-plugin` 手动导入。
+已发布到 npm：`fish-dock-plugin-rayburst@1.0.2`（Public，`latest`）。宿主商店在 npm 搜索索引收录后会检索到它；也可以直接用 `npm i fish-dock-plugin-rayburst` 或导入 Release 中的 `.fish-plugin`。
 
 `catalog.json` 仅表示元数据格式兼容，不表示插件已被 FISH-Dock 官方商店收录。
 
@@ -61,7 +61,7 @@ npm run check
 npm test
 npm run build
 npm run verify
-node scripts/assert-release.mjs v1.0.1
+node scripts/assert-release.mjs v1.0.2
 ```
 
 构建产物位于 `dist/`。`fflate` 与 `jsdom` 仅用于构建和测试，不会进入 `.fish-plugin` 运行包。ZIP 条目使用固定时间戳，同一源码可重复得到相同哈希。

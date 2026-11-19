@@ -2,7 +2,7 @@
   "schema": 1,
   "id": "says693.rayburst",
   "name": "Rayburst 下载",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "hostApi": 1,
   "platforms": [
     "windows-x86_64"
@@ -29,7 +29,8 @@
     }
   ],
   "files": {
-    "README.md": "70fd3485d1a087854077d9af73e67ce7157a5e34e04ca01856a9471580d6136c",
+    "package.json": "781b461ce29040458035dbb831f5a416c7e5215b4c7932561879b213fde3295f",
+    "README.md": "7c93e79f9007ffb782fef7053b5de2d07d259563af65a7ddbae35ab39bc893d6",
     "LICENSE": "db8b4b053ee107d49f22c15cf56117638afb3575c81fcd7188d272c9a90de345",
     "THIRD_PARTY_NOTICES.md": "b0315a6ec1861ba5996d34925d0f34d217fcc1d655df75e3a7d784fcd8fdb38d",
     "backend.mjs": "541da0db9a0e05d07452b9a2420be2694a27e752ecc0511fbc52840882eacb2c",

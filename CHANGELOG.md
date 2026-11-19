@@ -2,6 +2,17 @@
 
 本项目遵循 Keep a Changelog 格式，并使用语义化版本。
 
+## [1.0.2] - 2026-11-19
+
+### 修复
+
+- 将 `package.json` 纳入清单资源，修复宿主 npm 安装通道以「npm 包包含未声明的文件」拒绝整包的问题；`.fish-plugin` 与 npm 包的文件集合现在都等于「声明资源 + plugin.json」。
+- 补充 npm 包形状断言，钉住 `package.json` 的声明与 SHA-256。
+
+### 验证边界
+
+- 自动化测试不替代真实 FISH-Dock WebView 与 Rayburst 联调。
+
 ## [1.0.1] - 2026-11-13
 
 ### 变更

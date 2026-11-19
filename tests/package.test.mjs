@@ -30,6 +30,8 @@ test('发行包只包含声明资源，所有 SHA-256 与宿主契约一致', as
   assert.ok(files['README.md'])
   assert.ok(files['LICENSE'])
   assert.ok(files['sdk/LICENSE.txt'])
+  assert.ok(files['package.json'], 'npm 安装通道要求 package.json 出现在资源清单里')
+  assert.equal(JSON.parse(Buffer.from(files['package.json']).toString('utf8')).version, manifest.version)
   assert.equal(Object.keys(files).some(name => name.includes('node_modules') || name.includes('tests/')), false)
   const html = Buffer.from(files['page.html']).toString('utf8')
   assert.equal(/(?:src|href)=["']https?:\/\//i.test(html), false)

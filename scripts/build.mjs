@@ -7,6 +7,7 @@ import { zipSync } from 'fflate'
 const ROOT = path.resolve(fileURLToPath(new URL('../', import.meta.url)))
 const REPOSITORY = 'https://github.com/says693/fish-dock-plugin-rayburst'
 const RUNTIME_FILES = [
+  'package.json',
   'README.md',
   'LICENSE',
   'THIRD_PARTY_NOTICES.md',
