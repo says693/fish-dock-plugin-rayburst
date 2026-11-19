@@ -6,7 +6,7 @@
 | --- | --- | --- |
 | 发行格式 | ZIP 格式的 `.fish-plugin` | `npm run verify` 解压并校验文件集合 |
 | 清单版本 | `schema: 1`、`hostApi: 1` | `plugin.json` 与验包断言 |
-| npm 包名 | `fish-dock-plugin-rayburst`，符合宿主第三方发现命名规则；已按 `files` 白名单可发布 | 包名与发布形状测试 |
+| npm 包名 | `fish-dock-plugin-rayburst@1.0.1`，已发布并符合宿主第三方发现命名规则 | 包名与发布形状测试，registry 元数据核对 |
 | 插件标识 | `says693.rayburst` | 后端握手、页面 ticket 与协议测试一致 |
 | 目标平台 | `windows-x86_64` | 清单、CI 与 Release 均使用 Windows |
 | Node 运行时 | Node.js 24（宿主随包提供；2.3.x 只接受 24） | `engines.node`，CI 固定 24 |
