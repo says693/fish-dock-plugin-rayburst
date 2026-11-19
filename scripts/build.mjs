@@ -39,7 +39,9 @@ export async function build() {
   const manifestPath = path.join(ROOT, 'plugin.json')
   const manifest = JSON.parse(fs.readFileSync(manifestPath, 'utf8'))
   const entries = {}
-  const date = new Date('2026-01-01T00:00:00Z')
+  // ZIP 的 DOS 时间取 Date 的本地字段：必须用本地午夜构造，否则 UTC+8 的机器
+  // 会写成 08:00，与 UTC 的 CI 构建出不同哈希，"可复现构建"就跨时区失效。
+  const date = new Date(2026, 0, 1)
   manifest.files = {}
   for (const name of RUNTIME_FILES) {
     const bytes = fs.readFileSync(path.join(ROOT, name))
