@@ -32,6 +32,8 @@ jobs:
           cache: npm
       - name: Install development dependencies
         run: npm ci
+      - name: Prepare pinned engine and corresponding source
+        run: npm run vendor:engine
       - name: Syntax checks
         run: npm run check
       - name: Automated tests
@@ -52,9 +54,11 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: |
           $tag = "${{ github.event_name == 'workflow_dispatch' && inputs.tag || github.ref_name }}"
+          $engineSource = (Get-Content -Raw 'dist/manifest.json' | ConvertFrom-Json).engineSource.file
           $assets = @(
             "dist/rayburst.fish-plugin",
             "dist/rayburst-fish-plugin-source.zip",
+            "dist/$engineSource",
             "dist/SHA256SUMS.txt",
             "dist/manifest.json",
             "dist/catalog.json"

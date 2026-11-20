@@ -1,6 +1,7 @@
 node_modules/
 dist/
 .work/
+/vendor/
 coverage/
 *.log
 .DS_Store

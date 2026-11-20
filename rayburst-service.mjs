@@ -240,12 +240,14 @@ async function readOptional(storage, category, name) {
 
 export class RayburstService {
   constructor(context, {
+    engine = null,
     rpcFactory = config => new RayburstRpc(config),
     platform = process.platform,
     spawnProcess = spawn,
     fileExists = fs.existsSync,
   } = {}) {
     this.context = context
+    this.engine = engine
     this.rpcFactory = rpcFactory
     this.platform = platform
     this.spawnProcess = spawnProcess
@@ -262,37 +264,55 @@ export class RayburstService {
         config = parsed
       } catch { fail('INVALID_CONFIG', '保存的插件配置损坏，请重新保存连接设置') }
     }
-    const secret = await this.context.secrets.read('credentials', 'rpc-secret')
+    // 1.0.x 只保存外接设置；升级时保留已配置用户的任务来源。
+    const mode = config.mode ?? (config.port === undefined ? 'bundled' : 'external')
+    if (mode !== 'bundled' && mode !== 'external') fail('INVALID_CONFIG', '下载引擎模式无效')
     return {
+      mode,
       port: config.port === undefined ? DEFAULT_PORT : validatePort(config.port),
       pollMs: config.pollMs === undefined ? DEFAULT_POLL_MS : validatePollMs(config.pollMs),
-      secret: secret === null || secret === undefined ? '' : String(secret),
     }
   }
 
+  async externalSecret() {
+    return String(await this.context.secrets.read('credentials', 'rpc-secret') ?? '')
+  }
+
   async rpc() {
-    const { port, secret } = await this.connection()
-    return this.rpcFactory({ port, secret })
+    const { mode, port } = await this.connection()
+    if (mode === 'bundled') {
+      if (!this.engine) fail('ENGINE_MISSING', '插件包缺少内置下载引擎，请重新导入完整安装包')
+      return this.engine.rpc()
+    }
+    return this.rpcFactory({ port, secret: await this.externalSecret() })
   }
 
   async settings() {
-    const { port, pollMs, secret } = await this.connection()
-    return { port, pollMs, hasSecret: secret.length > 0 }
+    const config = await this.connection()
+    return {
+      ...config,
+      hasSecret: Boolean(await this.externalSecret()),
+    }
   }
 
   async saveSettings(input = {}) {
     const previous = await this.connection()
-    const port = input.port === undefined ? previous.port : validatePort(input.port)
+    const mode = input.mode ?? previous.mode
+    if (mode !== 'bundled' && mode !== 'external') fail('INVALID_CONFIG', '下载引擎模式无效')
+    const port = mode === 'external' && input.port !== undefined ? validatePort(input.port) : previous.port
     const pollMs = input.pollMs === undefined ? previous.pollMs : validatePollMs(input.pollMs)
-    let secret = previous.secret
-    if (input.clearSecret === true) secret = ''
-    else if (input.secret !== undefined && String(input.secret) !== '') {
-      secret = String(input.secret)
+    if (mode === 'external') {
+      const secret = input.clearSecret === true ? '' : String(input.secret ?? '')
       if (secret.length > 1024 || /[\u0000-\u001f]/.test(secret)) fail('INVALID_CONFIG', 'RPC 密钥最长 1024 字符且不能包含控制字符')
+      if (input.clearSecret === true || secret) await this.context.secrets.write('credentials', 'rpc-secret', secret)
     }
-    await this.context.secrets.write('credentials', 'rpc-secret', secret)
-    await this.context.storage.write('config', 'settings.json', JSON.stringify({ port, pollMs }))
-    return { port, pollMs, hasSecret: secret.length > 0 }
+    await this.context.storage.write('config', 'settings.json', JSON.stringify({ mode, port, pollMs }))
+    if (mode === 'external') await this.stop()
+    return this.settings()
+  }
+
+  async stop() {
+    await this.engine?.stop()
   }
 
   async testConnection() {
@@ -386,7 +406,7 @@ export class RayburstService {
     }
     if (action === 'resume') {
       const task = await rpc.call('aria2.tellStatus', [gid])
-      if (['awaiting', 'ready'].includes(task?.bittorrent?.fileSelectionState)) fail('SELECTION_REQUIRED', '请先在 Rayburst 中完成种子文件选择')
+      if (['awaiting', 'ready'].includes(task?.bittorrent?.fileSelectionState)) fail('SELECTION_REQUIRED', '此任务需要先完成种子文件选择')
       await rpc.call('aria2.unpause', [gid])
       return { ok: true, gid, action }
     }

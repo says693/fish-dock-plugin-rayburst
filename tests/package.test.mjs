@@ -6,6 +6,7 @@ import crypto from 'node:crypto'
 import { fileURLToPath } from 'node:url'
 import { unzipSync } from 'fflate'
 import { build } from '../scripts/build.mjs'
+import { engine, verifyAsset } from '../scripts/prepare-engine.mjs'
 
 const root = path.resolve(fileURLToPath(new URL('../', import.meta.url)))
 const digest = bytes => crypto.createHash('sha256').update(bytes).digest('hex')
@@ -27,6 +28,9 @@ test('发行包只包含声明资源，所有 SHA-256 与宿主契约一致', as
     assert.equal(digest(files[name]), expected, `${name} 摘要不符`)
     assert.ok(files[name].length <= 128 * 1024 * 1024)
   }
+  verifyAsset(files[engine.executable], engine.binary)
+  verifyAsset(fs.readFileSync(path.join(root, 'dist', metadata.engineSource.file)), engine.source)
+  assert.ok(files[engine.licenses], '安装包缺少内核许可')
   assert.ok(files['README.md'])
   assert.ok(files['LICENSE'])
   assert.ok(files['sdk/LICENSE.txt'])
@@ -58,7 +62,7 @@ test('npm 包可按发布形状被宿主商店发现', () => {
   assert.equal(packageJson.repository.url, 'git+https://github.com/says693/fish-dock-plugin-rayburst.git')
   assert.equal(packageJson.engines.node, '>=24.0.0')
   const covered = name => packageJson.files.some(entry => entry === name || (entry.endsWith('/') && name.startsWith(entry)))
-  for (const name of ['plugin.json', 'README.md', 'LICENSE', 'THIRD_PARTY_NOTICES.md', 'backend.mjs', 'rayburst-service.mjs', 'page.html', 'page.css', 'page.js', 'page-utils.js', 'sdk/node/plugin.mjs', 'sdk/browser/bridge.js', 'sdk/LICENSE.txt']) {
+  for (const name of ['plugin.json', 'README.md', 'LICENSE', 'THIRD_PARTY_NOTICES.md', 'backend.mjs', 'rayburst-service.mjs', 'bundled-engine.mjs', 'page.html', 'page.css', 'page.js', 'page-utils.js', 'sdk/node/plugin.mjs', 'sdk/browser/bridge.js', 'sdk/LICENSE.txt', engine.executable, engine.licenses]) {
     assert.ok(covered(name), `npm files 未覆盖 ${name}`)
   }
 })

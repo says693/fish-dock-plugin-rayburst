@@ -71,6 +71,8 @@ label.check { display: flex; align-items: center; gap: 8px; color: var(--text-ma
 .card-heading p, .muted { color: var(--text-muted); font-size: 12px; }
 .card-heading p { margin-top: 4px; }
 .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+#external-settings { min-width: 0; margin: 12px 0 0; padding: 0 10px 10px; border: 1px solid var(--line-control); border-radius: 12px; }
+#external-settings legend { color: var(--text-muted); }
 .actions { margin-top: 14px; flex-wrap: wrap; }
 .toolbar { flex-wrap: wrap; margin: 0 0 9px; }
 .filters { margin: 0 0 12px; }

@@ -131,15 +131,31 @@ test('RPC 密钥按 Rayburst 原生规则注入普通调用与 multicall 子调�
 
 test('设置使用加密凭据接口，空白密钥保留且从不清空回显', async () => {
   const { service, ctx } = serviceFor()
-  assert.deepEqual(await service.settings(), { port: DEFAULT_PORT, pollMs: 2500, hasSecret: false })
-  await service.saveSettings({ port: 29101, pollMs: 5000, secret: 'private-secret' })
-  assert.deepEqual(await service.settings(), { port: 29101, pollMs: 5000, hasSecret: true })
+  assert.deepEqual(await service.settings(), { mode: 'bundled', port: DEFAULT_PORT, pollMs: 2500, hasSecret: false })
+  await service.saveSettings({ mode: 'external', port: 29101, pollMs: 5000, secret: 'private-secret' })
+  assert.deepEqual(await service.settings(), { mode: 'external', port: 29101, pollMs: 5000, hasSecret: true })
   assert.equal(ctx.secrets.get('credentials/rpc-secret'), 'private-secret')
   assert.equal(JSON.stringify(await service.settings()).includes('private-secret'), false)
   await service.saveSettings({ secret: '' })
   assert.equal(ctx.secrets.get('credentials/rpc-secret'), 'private-secret')
   await service.saveSettings({ clearSecret: true })
   assert.equal((await service.settings()).hasSecret, false)
+})
+
+test('升级保留外接配置；来回切换不串用内核或清除旧凭据', async () => {
+  let stopped = 0
+  const bundledRpc = { call: async () => ({ product: 'bundled' }) }
+  const { service, ctx } = serviceFor(29101, {
+    engine: { rpc: async () => bundledRpc, stop: async () => { stopped += 1 } },
+    rpcFactory: ({ port, secret }) => ({ call: async () => ({ product: `${port}:${secret}` }) }),
+  })
+  assert.equal((await service.testConnection()).product, '29101:test-secret')
+  await service.saveSettings({ mode: 'bundled', port: -1, clearSecret: true })
+  assert.equal((await service.testConnection()).product, 'bundled')
+  await service.saveSettings({ mode: 'external' })
+  assert.equal((await service.testConnection()).product, '29101:test-secret')
+  assert.equal(ctx.secrets.get('credentials/rpc-secret'), 'test-secret')
+  assert.equal(stopped, 1)
 })
 
 test('任务快照使用一次 multicall，并规范化速度、进度字段和停止记录', async t => {
@@ -256,7 +272,7 @@ test('认证失败与连接失败返回稳定错误码', async t => {
 test('打开目录使用 explorer 参数数组且不经过 shell', async () => {
   const calls = []
   const fakeRpc = { call: async () => task('a'.repeat(16), 'complete') }
-  const { service } = serviceFor(null, {
+  const { service } = serviceFor(DEFAULT_PORT, {
     rpcFactory: () => fakeRpc,
     platform: 'win32',
     fileExists: () => true,

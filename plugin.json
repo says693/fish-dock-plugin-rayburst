@@ -2,7 +2,7 @@
   "schema": 1,
   "id": "says693.rayburst",
   "name": "Rayburst 下载",
-  "version": "1.0.2",
+  "version": "1.1.0",
   "hostApi": 1,
   "platforms": [
     "windows-x86_64"
@@ -29,19 +29,22 @@
     }
   ],
   "files": {
-    "package.json": "781b461ce29040458035dbb831f5a416c7e5215b4c7932561879b213fde3295f",
-    "README.md": "7c93e79f9007ffb782fef7053b5de2d07d259563af65a7ddbae35ab39bc893d6",
+    "package.json": "dca1409530e04ab5d8a839992507373b8f21aeca57c0db6e2545b599d7caceac",
+    "README.md": "71c15d8e0ff9f242a02ecdc3ccd1a97c7400467a6ab5116255f0e11a30592f24",
     "LICENSE": "db8b4b053ee107d49f22c15cf56117638afb3575c81fcd7188d272c9a90de345",
-    "THIRD_PARTY_NOTICES.md": "b0315a6ec1861ba5996d34925d0f34d217fcc1d655df75e3a7d784fcd8fdb38d",
-    "backend.mjs": "541da0db9a0e05d07452b9a2420be2694a27e752ecc0511fbc52840882eacb2c",
-    "rayburst-service.mjs": "6d0cfddf31b9c926b42f63ac082626423d01e5182a26be2c1b0b11765f8d80c0",
-    "page.html": "399ad236b4179d36cb09caf0157d527da886a58a1459f8f216d8dd2192c2facd",
-    "page.css": "3aa05fdd085f9a22b35ac8b40cae878d7f5aa68016ceda6ae71b9c824869e5e5",
-    "page.js": "3d738c0ef14f2e7fcda1487c80f592550fa8d2d14a2d144a02255b40540e6eb6",
-    "page-utils.js": "116c8181a5a5932da16726e718152bcd66d5ac1200e22ff1313893ef170129c6",
+    "THIRD_PARTY_NOTICES.md": "dbc3b13c784a203ccf4758bd8010448702eed1a386e13913e73315b024ee46a0",
+    "backend.mjs": "302c9afa82a84fb544d9562bb4659b2c7765c23382d3f6638b231051fbc100c7",
+    "rayburst-service.mjs": "6b4cb028b7f5bd049c34268f0d601d473f0c9aa539e54c343cae9059bd67e233",
+    "bundled-engine.mjs": "732750378483f44dd41961bdeb95fe7f15ce63ec3163c5a97493f534edf13ced",
+    "page.html": "6e2d40bc8eac1e0acda4e07ebeceda147fce55e6f831d427ca397bd7cdb66502",
+    "page.css": "654617708ab295a710b7f3a7b9aefdb3998d230360a174d1cbe9b9d332eaa3e8",
+    "page.js": "40e214d66a5a25e75652aa13d4027187c66f48a10b946c1940f32111a8905e0a",
+    "page-utils.js": "f2c87f61eb954dc1b5aa816331ecdf667f2ae56536348ceb926337a24aa953d2",
     "sdk/node/plugin.mjs": "f51558b6f4be03b957977f85eb2550283f0556e311a249c7b8f8e90870327b64",
     "sdk/browser/bridge.js": "0d780e594bdf368fab6b8b43fe299e93fed4621161108ee3cf64c446cff3a39b",
-    "sdk/LICENSE.txt": "c790de22db0116563e473ee71383d4cd574fe2989cdd21dfec50890e1e8a9065"
+    "sdk/LICENSE.txt": "c790de22db0116563e473ee71383d4cd574fe2989cdd21dfec50890e1e8a9065",
+    "vendor/aria2-next.exe": "33f13b297ebe219b99f098b1b21c9ec34eff90e20ed106cf3c86b210a7567351",
+    "vendor/aria2-next-licenses.txt": "98b587a0edcf31a4b812d4ad98968104d2c823c2011bfad0625dd2ba227291ee"
   },
   "behaviors": {
     "autostart": false

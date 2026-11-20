@@ -31,15 +31,19 @@ async function waitFor(predicate, message = '页面状态未就绪') {
   assert.fail(message)
 }
 
-async function fixture(t) {
+async function fixture(t, mode = 'external') {
   const dom = new JSDOM(html, { url: 'https://says693.rayburst/downloads/page.html', runScripts: 'outside-only', pretendToBeVisual: true })
   const calls = []
+  let settings = { mode, port: 29100, pollMs: 10000, hasSecret: mode === 'external' }
   const fishDock = {
     setLayout() {},
     call: async (method, params) => {
       calls.push({ method, params })
-      if (method === 'rayburst.settings') return { port: 29100, pollMs: 10000, hasSecret: true }
-      if (method === 'rayburst.saveSettings') return { port: params.port, pollMs: params.pollMs, hasSecret: true }
+      if (method === 'rayburst.settings') return settings
+      if (method === 'rayburst.saveSettings') {
+        settings = { ...settings, mode: params.mode, port: params.port ?? settings.port, pollMs: params.pollMs }
+        return settings
+      }
       if (method === 'rayburst.snapshot') return snapshot()
       if (method === 'rayburst.test') return { ok: true, product: 'aria2-next', version: '1.37.0' }
       if (method === 'rayburst.add') return { added: params.urls.length, failed: 0, results: params.urls.map((url, index) => ({ index, ok: true, gid: gid('d') })) }
@@ -98,8 +102,10 @@ test('移除任务必须二次确认，调用不包含删除文件参数', async
 test('添加下载发送逐行链接并在成功后清空表单', async t => {
   const { document, calls } = await fixture(t)
   document.getElementById('add-toggle').click()
+  document.getElementById('add-submit').click()
+  assert.equal(calls.some(row => row.method === 'rayburst.add'), false)
   document.getElementById('urls').value = 'https://example.com/a.zip\nhttps://example.com/b.zip'
-  document.getElementById('add-panel').dispatchEvent(new document.defaultView.Event('submit', { bubbles: true, cancelable: true }))
+  document.getElementById('add-submit').click()
   await waitFor(() => calls.some(row => row.method === 'rayburst.add'))
   const added = calls.find(row => row.method === 'rayburst.add')
   assert.deepEqual(JSON.parse(JSON.stringify(added.params.urls)), ['https://example.com/a.zip', 'https://example.com/b.zip'])
@@ -114,14 +120,34 @@ test('保存设置发送端口与刷新间隔，空密钥表示保留', async t 
   document.getElementById('port').value = '29102'
   document.getElementById('poll').value = '5000'
   document.getElementById('secret').value = ''
-  document.getElementById('settings-panel').dispatchEvent(new document.defaultView.Event('submit', { bubbles: true, cancelable: true }))
+  document.getElementById('port').dispatchEvent(new document.defaultView.KeyboardEvent('keydown', { key: 'Enter', bubbles: true, cancelable: true }))
   await waitFor(() => calls.some(row => row.method === 'rayburst.saveSettings'))
   const saved = calls.find(row => row.method === 'rayburst.saveSettings')
-  assert.deepEqual(JSON.parse(JSON.stringify(saved.params)), { port: 29102, pollMs: 5000, secret: '', clearSecret: false })
+  assert.deepEqual(JSON.parse(JSON.stringify(saved.params)), { mode: 'external', port: 29102, pollMs: 5000, secret: '', clearSecret: false })
   assert.equal(document.getElementById('secret').value, '')
-  await waitFor(() => document.getElementById('status').textContent === '连接设置已保存')
+  await waitFor(() => document.getElementById('status').getAttribute('aria-busy') === 'false')
+  assert.equal(document.getElementById('poll-label').textContent, '5')
 })
 
+test('内置模式隐藏 RPC 字段，保存时不发送端口或密钥', async t => {
+  const { document, calls } = await fixture(t, 'bundled')
+  assert.match(document.getElementById('engine-version').textContent, /内置引擎/)
+  document.getElementById('settings-toggle').click()
+  await waitFor(() => !document.getElementById('settings-panel').hidden)
+  const external = document.getElementById('external-settings')
+  assert.equal(external.hidden && external.disabled, true)
+  const mode = document.getElementById('mode')
+  mode.value = 'external'
+  mode.dispatchEvent(new document.defaultView.Event('change'))
+  assert.equal(external.hidden || external.disabled, false)
+  mode.value = 'bundled'
+  mode.dispatchEvent(new document.defaultView.Event('change'))
+  document.getElementById('settings-save').click()
+  await waitFor(() => calls.some(row => row.method === 'rayburst.saveSettings'))
+  const { params } = calls.find(row => row.method === 'rayburst.saveSettings')
+  assert.deepEqual(JSON.parse(JSON.stringify(params)), { mode: 'bundled', pollMs: 10000 })
+  await waitFor(() => document.getElementById('status').getAttribute('aria-busy') === 'false')
+})
 
 test('打开设置后焦点进入输入框，不禁用整个页面', async t => {
   const { document } = await fixture(t)
@@ -129,7 +155,7 @@ test('打开设置后焦点进入输入框，不禁用整个页面', async t => 
   toggle.focus()
   toggle.click()
   await waitFor(() => !document.getElementById('settings-panel').hidden)
-  assert.equal(document.activeElement.id, 'port')
+  assert.equal(document.activeElement.id, 'mode')
   assert.equal(document.getElementById('filter').disabled, false)
 })
 

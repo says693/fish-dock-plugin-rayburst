@@ -3,6 +3,7 @@ import path from 'node:path'
 import crypto from 'node:crypto'
 import { fileURLToPath } from 'node:url'
 import { zipSync } from 'fflate'
+import { engine, engineSourcePath, verifyAsset } from './prepare-engine.mjs'
 
 const ROOT = path.resolve(fileURLToPath(new URL('../', import.meta.url)))
 const REPOSITORY = 'https://github.com/says693/fish-dock-plugin-rayburst'
@@ -13,6 +14,7 @@ const RUNTIME_FILES = [
   'THIRD_PARTY_NOTICES.md',
   'backend.mjs',
   'rayburst-service.mjs',
+  'bundled-engine.mjs',
   'page.html',
   'page.css',
   'page.js',
@@ -20,6 +22,8 @@ const RUNTIME_FILES = [
   'sdk/node/plugin.mjs',
   'sdk/browser/bridge.js',
   'sdk/LICENSE.txt',
+  engine.executable,
+  engine.licenses,
 ]
 const sha256 = value => crypto.createHash('sha256').update(value).digest('hex')
 const archiveEntry = (value, date) => [value, { mtime: date }]
@@ -28,6 +32,7 @@ function sourceFiles(directory = ROOT, prefix = '') {
   const files = []
   for (const entry of fs.readdirSync(directory, { withFileTypes: true })) {
     if (['node_modules', 'dist', '.git', '.work'].includes(entry.name)) continue
+    if (!prefix && entry.name === 'vendor') continue
     const absolute = path.join(directory, entry.name)
     const relative = prefix ? `${prefix}/${entry.name}` : entry.name
     if (entry.isDirectory()) files.push(...sourceFiles(absolute, relative))
@@ -39,6 +44,7 @@ function sourceFiles(directory = ROOT, prefix = '') {
 export async function build() {
   const manifestPath = path.join(ROOT, 'plugin.json')
   const manifest = JSON.parse(fs.readFileSync(manifestPath, 'utf8'))
+  const engineSource = verifyAsset(fs.readFileSync(engineSourcePath), engine.source)
   const entries = {}
   // ZIP 的 DOS 时间取 Date 的本地字段：必须用本地午夜构造，否则 UTC+8 的机器
   // 会写成 08:00，与 UTC 的 CI 构建出不同哈希，"可复现构建"就跨时区失效。
@@ -46,6 +52,7 @@ export async function build() {
   manifest.files = {}
   for (const name of RUNTIME_FILES) {
     const bytes = fs.readFileSync(path.join(ROOT, name))
+    if (name === engine.executable) verifyAsset(bytes, engine.binary)
     manifest.files[name] = sha256(bytes)
     entries[name] = archiveEntry(bytes, date)
   }
@@ -63,13 +70,14 @@ export async function build() {
   const downloadBase = `${REPOSITORY}/releases/download/v${manifest.version}`
   fs.writeFileSync(path.join(dist, packageName), packageBytes)
   fs.writeFileSync(path.join(dist, sourceName), sourceBytes)
+  fs.writeFileSync(path.join(dist, engine.source.name), engineSource)
 
   const catalogBytes = Buffer.from(`${JSON.stringify({
     schema: 1,
     plugins: [{
       id: manifest.id,
       name: manifest.name,
-      description: '在 FISH-Dock 中添加和管理 Rayburst 下载任务',
+      description: '在 FISH-Dock 中使用内置 Aria2 Next 添加和管理下载任务',
       authors: ['says693'],
       version: manifest.version,
       hostApi: manifest.hostApi,
@@ -101,6 +109,14 @@ export async function build() {
       sha256: sha256(sourceBytes),
       url: `${downloadBase}/${sourceName}`,
     },
+    engineSource: {
+      file: engine.source.name,
+      version: engine.version,
+      commit: engine.commit,
+      bytes: engineSource.length,
+      sha256: engine.source.sha256,
+      url: `${downloadBase}/${engine.source.name}`,
+    },
     catalog: { file: 'catalog.json', bytes: catalogBytes.length, sha256: sha256(catalogBytes) },
     resources: Object.keys(manifest.files).length,
   }
@@ -109,6 +125,7 @@ export async function build() {
   const sums = [
     `${sha256(packageBytes)}  ${packageName}`,
     `${sha256(sourceBytes)}  ${sourceName}`,
+    `${engine.source.sha256}  ${engine.source.name}`,
     `${sha256(metadataBytes)}  manifest.json`,
     `${sha256(catalogBytes)}  catalog.json`,
     '',

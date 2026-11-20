@@ -3,18 +3,20 @@
 ## 开发环境
 
 - Windows x64
-- Node.js 22.17.0 或更新版本
+- Node.js 24
 - npm 10 或更新版本
+- `curl`、`tar`（仅构建时准备引擎；Windows 新版系统自带）
 
 ## 验证流程
 
 ```sh
 npm ci
+npm run vendor:engine
 npm run check
 npm test
 npm run build
 npm run verify
-node scripts/assert-release.mjs v1.0.0
+npm run release:check -- v1.1.0
 ```
 
 提交 Pull Request 前必须完成上述检查。涉及 RPC 的修改需要增加模拟服务测试；涉及页面的修改需要增加 jsdom 测试；涉及清单或打包的修改必须更新验包规则。
@@ -32,7 +34,8 @@ node scripts/assert-release.mjs v1.0.0
 1. 更新 `package.json`、`plugin.json` 和 `CHANGELOG.md` 的版本。
 2. 完整执行验证流程。
 3. 合并到 `main` 后创建 `vX.Y.Z` 标签并推送。
-4. Release 工作流会重新测试、验包并上传安装包、源码、清单和校验文件。
+4. Release 工作流会重新测试、验包并上传安装包、插件源码、内核对应源码、清单和校验文件。
+5. 先确认对应源码已随 GitHub Release 上传，再使用 `npm pack` 验证后发布 npm 包。更新内核版本时同步更新 `scripts/prepare-engine.mjs` 的固定来源及第三方声明。
 
 ## 提交信息
 

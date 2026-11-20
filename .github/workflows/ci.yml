@@ -22,6 +22,8 @@ jobs:
           cache: npm
       - name: Install development dependencies
         run: npm ci
+      - name: Prepare pinned engine and corresponding source
+        run: npm run vendor:engine
       - name: Syntax checks
         run: npm run check
       - name: Automated tests

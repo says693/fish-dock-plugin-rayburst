@@ -5,8 +5,8 @@ const state = {
   filter: 'all',
   query: '',
   pollMs: 2500,
+  mode: 'bundled',
   port: 29100,
-  hasSecret: false,
   refreshing: false,
   connectionError: false,
   busy: false,
@@ -107,7 +107,8 @@ function render() {
   $('up-speed').textContent = utils.speed(snapshot.stat.uploadSpeed)
   $('active-count').textContent = String(snapshot.stat.numActive)
   $('waiting-count').textContent = String(snapshot.stat.numWaiting)
-  $('engine-version').textContent = `${snapshot.engine.product} ${snapshot.engine.version} · RPC ${snapshot.engine.rpcVersion || '—'} · 端口 ${state.port}`
+  const source = state.mode === 'external' ? `本机 Rayburst · 端口 ${state.port}` : '内置引擎'
+  $('engine-version').textContent = `${snapshot.engine.product} ${snapshot.engine.version} · ${source}`
   $('poll-label').textContent = String(state.pollMs / 1000)
   const tasks = utils.filterTasks(snapshot.tasks, state.filter, state.query)
   const focused = document.activeElement
@@ -185,42 +186,64 @@ function toggleSettings(open) {
   $('settings-toggle').setAttribute('aria-expanded', String(open))
   if (open) {
     toggleAdd(false)
-    $('port').focus()
+    $('mode').focus()
   }
 }
 
-async function loadSettings() {
-  const settings = await FishDock.call('rayburst.settings', {})
+function updateEngineFields() {
+  const external = $('mode').value === 'external'
+  $('external-settings').hidden = !external
+  $('external-settings').disabled = !external
+}
+
+function showSettings(settings) {
+  if (state.mode !== settings.mode || (settings.mode === 'external' && state.port !== settings.port)) {
+    state.snapshot = null
+    clearPendingRemove()
+    $('tasks').replaceChildren()
+    $('task-count').textContent = '0 条'
+    $('truncated').hidden = true
+    for (const key of ['down-speed', 'up-speed', 'active-count', 'waiting-count', 'engine-version']) $(key).textContent = '—'
+  }
+  state.mode = settings.mode
   state.port = settings.port
   state.pollMs = settings.pollMs
-  state.hasSecret = settings.hasSecret
+  $('mode').value = state.mode
   $('port').value = String(settings.port)
   $('poll').value = String(settings.pollMs)
   $('secret').value = ''
   $('clear-secret').checked = false
   $('secret-state').textContent = settings.hasSecret ? '已保存密钥；留空保持不变' : '尚未保存密钥'
   $('poll-label').textContent = String(settings.pollMs / 1000)
-  return settings
+  $('download-target').textContent = state.mode === 'external'
+    ? '保存目录沿用 Rayburst 设置。'
+    : '内置引擎保存到用户目录下的 Downloads/Rayburst。'
+  updateEngineFields()
+}
+
+async function loadSettings() {
+  showSettings(await FishDock.call('rayburst.settings', {}))
 }
 
 async function saveSettings() {
-  const settings = await FishDock.call('rayburst.saveSettings', {
+  const mode = $('mode').value
+  const input = { mode, pollMs: Number($('poll').value) }
+  if (mode === 'external') Object.assign(input, {
     port: Number($('port').value),
-    pollMs: Number($('poll').value),
     secret: $('secret').value,
     clearSecret: $('clear-secret').checked,
   })
-  await loadSettings()
-  return settings
+  showSettings(await FishDock.call('rayburst.saveSettings', input))
 }
 
+$('mode').onchange = updateEngineFields
 $('add-toggle').onclick = () => toggleAdd($('add-panel').hidden)
 $('add-cancel').onclick = () => toggleAdd(false)
 $('settings-toggle').onclick = () => run(async () => {
   const open = $('settings-panel').hidden
   if (open) await loadSettings()
   toggleSettings(open)
-  return open ? '连接设置已读取' : '连接设置已收起'
+  return open ? '下载设置已读取' : '下载设置已收起'
 })
 
 $('refresh').onclick = () => run(async () => {
@@ -231,42 +254,49 @@ $('refresh').onclick = () => run(async () => {
 $('filter').onchange = () => { state.filter = $('filter').value; render() }
 $('search').oninput = () => { state.query = $('search').value; render() }
 
-$('add-panel').addEventListener('submit', event => {
-  event.preventDefault()
-  void run(async () => {
-    const links = $('urls').value.split(/\r?\n/).map(value => value.trim()).filter(Boolean)
-    const result = await FishDock.call('rayburst.add', { urls: links, filename: $('filename').value })
-    if (result.failed) {
-      const failed = result.results.filter(row => !row.ok)
-      $('urls').value = failed.map(row => links[row.index]).join('\n')
-      setStatus('bad', `已添加 ${result.added} 个，失败 ${result.failed} 个：${failed[0].message}`)
-    } else {
-      $('urls').value = ''
-      $('filename').value = ''
-      toggleAdd(false)
-    }
-    await refresh(true)
-    return result.failed ? '' : `已添加 ${result.added} 个下载任务`
-  })
+// Dock 的 iframe 不允许原生表单提交；在执行 RPC 前仍使用原生约束校验。
+function onFormAction(button, form, operation) {
+  $(button).onclick = () => { if ($(form).reportValidity()) void run(operation) }
+}
+
+onFormAction('add-submit', 'add-panel', async () => {
+  const links = $('urls').value.split(/\r?\n/).map(value => value.trim()).filter(Boolean)
+  const result = await FishDock.call('rayburst.add', { urls: links, filename: $('filename').value })
+  if (result.failed) {
+    const failed = result.results.filter(row => !row.ok)
+    $('urls').value = failed.map(row => links[row.index]).join('\n')
+    setStatus('bad', `已添加 ${result.added} 个，失败 ${result.failed} 个：${failed[0].message}`)
+  } else {
+    $('urls').value = ''
+    $('filename').value = ''
+    toggleAdd(false)
+  }
+  await refresh(true)
+  return result.failed ? '' : `已添加 ${result.added} 个下载任务`
 })
 
-$('settings-panel').addEventListener('submit', event => {
-  event.preventDefault()
-  void run(async () => {
-    await saveSettings()
-    await refresh(true)
-    scheduleRefresh()
-    return '连接设置已保存'
-  })
+onFormAction('settings-save', 'settings-panel', async () => {
+  await saveSettings()
+  await refresh(true)
+  scheduleRefresh()
+  return '下载设置已保存'
 })
 
-$('test-connection').onclick = () => run(async () => {
+onFormAction('test-connection', 'settings-panel', async () => {
   await saveSettings()
   scheduleRefresh()
   const result = await FishDock.call('rayburst.test', {})
   await refresh(true)
   return `连接成功：${result.product} ${result.version}`
 })
+
+for (const [field, button] of [['filename', 'add-submit'], ['port', 'settings-save'], ['secret', 'settings-save']]) {
+  $(field).addEventListener('keydown', event => {
+    if (event.key !== 'Enter' || event.isComposing) return
+    event.preventDefault()
+    $(button).click()
+  })
+}
 
 $('pause-all').onclick = () => run(async () => {
   await FishDock.call('rayburst.pauseAll', {})

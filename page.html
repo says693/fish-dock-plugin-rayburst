@@ -21,11 +21,11 @@
     </div>
     <div class="header-actions">
       <span id="connection" class="connection" data-tone="idle"><span aria-hidden="true"></span>未连接</span>
-      <button id="settings-toggle" type="button" aria-expanded="false" aria-controls="settings-panel">连接设置</button>
+      <button id="settings-toggle" type="button" aria-expanded="false" aria-controls="settings-panel">下载设置</button>
     </div>
   </header>
 
-  <p id="status" class="banner" data-tone="idle" role="status" aria-live="polite">正在连接 Rayburst…</p>
+  <p id="status" class="banner" data-tone="idle" role="status" aria-live="polite">正在连接下载引擎…</p>
 
   <section class="stats" aria-label="下载统计">
     <div class="stat"><span>下载速度</span><strong id="down-speed">—</strong></div>
@@ -36,7 +36,7 @@
 
   <form id="add-panel" class="card" hidden>
     <div class="card-heading">
-      <div><h2>添加下载</h2><p>每行一个链接，保存目录沿用 Rayburst 设置。</p></div>
+      <div><h2>添加下载</h2><p>每行一个链接。<span id="download-target">内置引擎保存到用户目录下的 Downloads/Rayburst。</span></p></div>
       <button id="add-cancel" type="button" class="quiet">收起</button>
     </div>
     <label for="urls">下载链接</label>
@@ -44,17 +44,20 @@
     <label for="filename">自定义文件名（可选，仅单个 HTTP/FTP/SFTP 链接）</label>
     <input id="filename" type="text" maxlength="240" autocomplete="off" placeholder="沿用服务器文件名">
     <p class="muted">支持 HTTP、HTTPS、FTP、SFTP、磁力、ED2K 和迅雷链接，每次最多 20 个。</p>
-    <div class="actions"><button type="submit" class="primary">开始下载</button></div>
+    <div class="actions"><button id="add-submit" type="button" class="primary">开始下载</button></div>
   </form>
 
   <form id="settings-panel" class="card" hidden>
     <div class="card-heading">
-      <div><h2>本机连接</h2><p>连接 127.0.0.1 上的 Rayburst aria2 JSON-RPC。</p></div>
+      <div><h2>下载设置</h2><p>内置引擎无需安装 Rayburst；两种模式的下载任务互不共享。</p></div>
     </div>
     <div class="form-grid">
       <div>
-        <label for="port">RPC 端口</label>
-        <input id="port" type="number" min="1" max="65535" step="1" required value="29100">
+        <label for="mode">下载引擎</label>
+        <select id="mode">
+          <option value="bundled">内置 Aria2 Next（无需配置）</option>
+          <option value="external">连接本机 Rayburst</option>
+        </select>
       </div>
       <div>
         <label for="poll">自动刷新</label>
@@ -67,13 +70,18 @@
         </select>
       </div>
     </div>
-    <label for="secret">RPC 密钥</label>
-    <input id="secret" type="password" maxlength="1024" autocomplete="new-password" placeholder="首次填写；保存后不再回显">
-    <p id="secret-state" class="muted">尚未保存密钥</p>
-    <label class="check" for="clear-secret"><input id="clear-secret" type="checkbox">保存时清除已存密钥（仅在 Rayburst 中也为空时使用）</label>
-    <p class="muted">端口与密钥位于 Rayburst「设置 → 高级 → RPC 设置」。密钥由 FISH-Dock 使用当前 Windows 用户加密保存。</p>
+    <fieldset id="external-settings" hidden disabled>
+      <legend>本机 Rayburst · 127.0.0.1</legend>
+      <label for="port">RPC 端口</label>
+      <input id="port" type="number" min="1" max="65535" step="1" required value="29100">
+      <label for="secret">RPC 密钥</label>
+      <input id="secret" type="password" maxlength="1024" autocomplete="new-password" placeholder="首次填写；保存后不再回显">
+      <p id="secret-state" class="muted">尚未保存密钥</p>
+      <label class="check" for="clear-secret"><input id="clear-secret" type="checkbox">保存时清除已存密钥（仅在 Rayburst 中也为空时使用）</label>
+      <p class="muted">端口与密钥位于 Rayburst「设置 → 高级 → RPC 设置」。</p>
+    </fieldset>
     <div class="actions">
-      <button type="submit" class="primary">保存设置</button>
+      <button id="settings-save" type="button" class="primary">保存设置</button>
       <button id="test-connection" type="button">保存并测试</button>
     </div>
   </form>

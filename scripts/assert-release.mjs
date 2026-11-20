@@ -26,6 +26,6 @@ assert.ok(start >= 0, `CHANGELOG.md 缺少 ${heading}`)
 const remainder = changelog.slice(start)
 const next = remainder.slice(heading.length).search(/^## \[/m)
 const section = (next < 0 ? remainder : remainder.slice(0, heading.length + next)).trim()
-const notes = `${section.replace(/^## .*$/m, `# Rayburst FISH-Dock 插件 ${tag}`)}\n\n## 安装\n\n下载 \`rayburst.fish-plugin\`，在 FISH-Dock 插件页导入，然后按 README 配置 Rayburst 本机 RPC 端口与密钥。\n`
+const notes = `${section.replace(/^## .*$/m, `# Rayburst FISH-Dock 插件 ${tag}`)}\n\n## 安装\n\n下载 \`rayburst.fish-plugin\`，在 FISH-Dock 插件页导入，打开「Rayburst 下载」即可使用内置引擎。已有外接配置的用户可在「下载设置」切换。\n\n[内置 Aria2 Next 的对应源码](${metadata.engineSource.url})\n`
 fs.writeFileSync(path.join(root, 'dist/RELEASE_NOTES.md'), notes)
 console.log(`Release ${tag} 校验通过；发布说明已写入 dist/RELEASE_NOTES.md`)

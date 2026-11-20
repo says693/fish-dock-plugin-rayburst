@@ -4,6 +4,7 @@ import fs from 'node:fs'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { unzipSync } from 'fflate'
+import { engine, verifyAsset } from './prepare-engine.mjs'
 
 const root = path.resolve(fileURLToPath(new URL('../', import.meta.url)))
 const dist = path.join(root, 'dist')
@@ -41,7 +42,7 @@ assert.equal(manifest.backend.runtime, 'node')
 assert.ok(manifest.files[manifest.backend.entry])
 assert.ok(manifest.pages.length > 0)
 for (const page of manifest.pages) assert.ok(manifest.files[page.entry], `缺少页面资源 ${page.entry}`)
-for (const required of ['package.json', 'README.md', 'LICENSE', 'THIRD_PARTY_NOTICES.md', 'sdk/LICENSE.txt']) assert.ok(manifest.files[required], `缺少 ${required}`)
+for (const required of ['package.json', 'README.md', 'LICENSE', 'THIRD_PARTY_NOTICES.md', 'sdk/LICENSE.txt', 'bundled-engine.mjs']) assert.ok(manifest.files[required], `缺少 ${required}`)
 assert.deepEqual(names.sort(), ['plugin.json', ...Object.keys(manifest.files)].sort())
 assert.equal(metadata.resources, Object.keys(manifest.files).length)
 for (const [name, expected] of Object.entries(manifest.files)) {
@@ -49,6 +50,8 @@ for (const [name, expected] of Object.entries(manifest.files)) {
   assert.equal(digest(files[name]), expected, `${name} SHA-256 不符`)
   assert.ok(files[name].length <= 128 * 1024 * 1024, `${name} 超过宿主资源限制`)
 }
+verifyAsset(files[engine.executable], engine.binary)
+assert.ok(files[engine.licenses], '安装包缺少内核许可')
 assert.ok(!names.some(name => name.startsWith('node_modules/') || name.startsWith('tests/')))
 const html = text(files['page.html'])
 assert.ok(!/(?:src|href)=["']https?:\/\//i.test(html), '页面引用了远程资源')
@@ -61,7 +64,14 @@ assert.equal(digest(sourceBytes), metadata.source.sha256)
 const source = unzipSync(sourceBytes)
 safeArchive(Object.keys(source))
 for (const required of ['plugin.json', 'backend.mjs', 'tests/service.test.mjs', 'scripts/build.mjs', 'docs/PLUGIN-COMPLIANCE.md']) assert.ok(source[required], `源码包缺少 ${required}`)
-assert.ok(!Object.keys(source).some(name => name.startsWith('node_modules/') || name.startsWith('dist/') || name.startsWith('.git/')))
+assert.ok(!Object.keys(source).some(name => /^(node_modules|dist|\.git|vendor|\.work)\//.test(name)))
+
+assert.equal(metadata.engineSource.file, engine.source.name)
+assert.equal(metadata.engineSource.commit, engine.commit)
+assert.equal(metadata.engineSource.version, engine.version)
+assert.equal(metadata.engineSource.bytes, engine.source.bytes)
+assert.equal(metadata.engineSource.sha256, engine.source.sha256)
+verifyAsset(fs.readFileSync(path.join(dist, engine.source.name)), engine.source)
 
 const catalog = readJson(path.join(dist, metadata.catalog.file))
 assert.equal(catalog.schema, 1)
@@ -77,7 +87,7 @@ assert.equal(entry.bytes, metadata.package.bytes)
 assert.equal(digest(fs.readFileSync(path.join(dist, metadata.catalog.file))), metadata.catalog.sha256)
 
 const sums = fs.readFileSync(path.join(dist, 'SHA256SUMS.txt'), 'utf8').trim().split(/\r?\n/)
-assert.equal(sums.length, 4)
+assert.equal(sums.length, 5)
 for (const line of sums) {
   const match = /^([0-9a-f]{64})  (.+)$/.exec(line)
   assert.ok(match, `无效校验行：${line}`)

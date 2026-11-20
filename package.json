@@ -1,7 +1,7 @@
 {
   "name": "fish-dock-plugin-rayburst",
-  "version": "1.0.2",
-  "description": "Rayburst download manager plugin for FISH-Dock",
+  "version": "1.1.0",
+  "description": "Standalone Rayburst download manager plugin for FISH-Dock with bundled Aria2 Next",
   "author": "says693",
   "type": "module",
   "os": [
@@ -17,16 +17,21 @@
     "THIRD_PARTY_NOTICES.md",
     "backend.mjs",
     "rayburst-service.mjs",
+    "bundled-engine.mjs",
     "page.html",
     "page.css",
     "page.js",
     "page-utils.js",
-    "sdk/"
+    "sdk/",
+    "vendor/aria2-next.exe",
+    "vendor/aria2-next-licenses.txt"
   ],
   "scripts": {
-    "check": "node --check backend.mjs && node --check rayburst-service.mjs && node --check page.js && node --check page-utils.js && node --check scripts/build.mjs && node --check scripts/verify-package.mjs && node --check scripts/assert-release.mjs",
+    "check": "node --check backend.mjs && node --check rayburst-service.mjs && node --check bundled-engine.mjs && node --check page.js && node --check page-utils.js && node --check scripts/prepare-engine.mjs && node --check scripts/build.mjs && node --check scripts/verify-package.mjs && node --check scripts/assert-release.mjs",
     "test": "node --test tests/*.test.mjs",
+    "vendor:engine": "node scripts/prepare-engine.mjs",
     "build": "node scripts/build.mjs",
+    "prepack": "npm run vendor:engine && npm run build",
     "verify": "node scripts/verify-package.mjs",
     "release:check": "node scripts/assert-release.mjs"
   },

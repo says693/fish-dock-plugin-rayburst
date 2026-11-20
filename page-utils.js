@@ -9,19 +9,19 @@
     unknown: '未知',
   }
   const ERRORS = {
-    RPC_AUTH: 'RPC 密钥不正确，请打开连接设置重新填写。',
-    RPC_UNREACHABLE: '未连接到 Rayburst，请启动应用并核对 RPC 端口。',
-    RPC_TIMEOUT: '连接 Rayburst 超时，请确认应用正在运行。',
+    RPC_AUTH: 'RPC 密钥不正确，请打开下载设置重新填写。',
+    RPC_UNREACHABLE: '下载引擎未连接；外接模式下请确认 Rayburst 正在运行，并核对端口。',
+    RPC_TIMEOUT: '下载引擎连接超时，请检查下载设置并重试。',
     RPC_UNSUPPORTED: '当前 Rayburst 版本不支持这个操作，请升级后重试。',
-    INVALID_CONFIG: '连接设置无效，请检查端口和刷新间隔。',
+    INVALID_CONFIG: '下载设置无效，请检查引擎模式、端口和刷新间隔。',
     INVALID_URL: '下载链接无效，请检查协议与地址。',
     UNSUPPORTED_SCHEME: '仅支持 HTTP、HTTPS、FTP、SFTP、磁力、ED2K 和迅雷链接。',
     TOO_MANY_LINKS: '每次最多添加 20 个下载链接。',
     INVALID_FILENAME: '文件名无效；批量、磁力、ED2K 和迅雷任务不能指定文件名。',
-    SELECTION_REQUIRED: '这个种子需要先选择文件，请在 Rayburst 中完成选择。',
+    SELECTION_REQUIRED: '此任务需要先选择文件。内置模式暂不支持；外接模式请在 Rayburst 中完成。',
     FILE_NOT_FOUND: '文件或下载目录尚不存在。',
-    UNSUPPORTED_PLATFORM: '打开所在文件夹仅支持 Windows。',
-    PLUGIN_OPERATION_FAILED: '插件操作失败，请检查连接设置后重试。',
+    UNSUPPORTED_PLATFORM: '当前系统不支持此插件操作。',
+    PLUGIN_OPERATION_FAILED: '插件操作失败，请检查下载设置后重试。',
   }
   function bytes(value) {
     let size = Number(value)

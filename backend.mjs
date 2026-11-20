@@ -1,5 +1,6 @@
 import { createPlugin } from './sdk/node/plugin.mjs'
 import { PluginError, RayburstService } from './rayburst-service.mjs'
+import { BundledEngine } from './bundled-engine.mjs'
 
 let service
 
@@ -9,19 +10,26 @@ function handle(operation) {
       return await operation(params || {})
     } catch (error) {
       if (error instanceof PluginError) throw error
-      throw new PluginError('PLUGIN_OPERATION_FAILED', '插件操作失败，请检查连接设置后重试')
+      throw new PluginError('PLUGIN_OPERATION_FAILED', '插件操作失败，请检查下载设置后重试')
     }
   }
 }
 
+async function stop() {
+  const active = service
+  service = null
+  await active?.stop()
+}
+
+// 宿主正常停用走 deactivate；管道先关闭时也要收回内核。
+process.stdin.once('end', () => { void stop().catch(() => {}) })
+
 createPlugin({
   id: 'says693.rayburst',
   activate(context) {
-    service = new RayburstService(context)
+    service = new RayburstService(context, { engine: new BundledEngine(context.dataDirectory) })
   },
-  deactivate() {
-    service = null
-  },
+  deactivate: stop,
   commands: {
     'plugin.health': () => ({ ready: true }),
     'rayburst.settings': handle(() => service.settings()),
