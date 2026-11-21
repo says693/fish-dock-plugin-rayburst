@@ -156,6 +156,53 @@ test('升级保留外接配置；来回切换不串用内核或清除旧凭据',
   assert.equal((await service.testConnection()).product, '29101:test-secret')
   assert.equal(ctx.secrets.get('credentials/rpc-secret'), 'test-secret')
   assert.equal(stopped, 1)
+  await service.saveSettings({ mode: 'bundled' })
+  assert.equal((await service.testConnection()).product, 'bundled')
+  assert.equal(stopped, 1)
+})
+
+test('管道关闭使服务失效，已兑现的配置读取也不能再启动内核', async () => {
+  const reading = Promise.withResolvers()
+  const settings = Promise.withResolvers()
+  const lifecycle = []
+  let reads = 0
+  const { service, ctx } = serviceFor(undefined, {
+    engine: {
+      rpc: async () => {
+        lifecycle.push('rpc')
+        return { call: async () => ({ product: 'bundled' }) }
+      },
+      stop: async () => { lifecycle.push('stop') },
+    },
+  })
+  ctx.storage.read = () => { reads += 1; reading.resolve(); return settings.promise }
+  const connecting = service.testConnection()
+  await reading.promise
+  // SDK 的宿主回执可先兑现，但 EOF 清理仍会抢在 connection() 的多层 await 之前。
+  settings.resolve(null)
+  const closing = service.close()
+  await assert.rejects(connecting, { code: 'PLUGIN_CLOSED' })
+  await closing
+  assert.deepEqual(lifecycle, ['stop'])
+  await assert.rejects(service.testConnection(), { code: 'PLUGIN_CLOSED' })
+  assert.equal(reads, 1)
+  assert.deepEqual(lifecycle, ['stop'])
+})
+
+test('读外接凭据期间关闭服务时不再发起 RPC', async () => {
+  const reading = Promise.withResolvers()
+  const secret = Promise.withResolvers()
+  let called = false
+  const { service, ctx } = serviceFor(29101, {
+    rpcFactory: () => ({ call: async () => { called = true; return {} } }),
+  })
+  ctx.secrets.read = () => { reading.resolve(); return secret.promise }
+  const connecting = service.testConnection()
+  await reading.promise
+  await service.close()
+  secret.resolve('test-secret')
+  await assert.rejects(connecting, { code: 'PLUGIN_CLOSED' })
+  assert.equal(called, false)
 })
 
 test('任务快照使用一次 multicall，并规范化速度、进度字段和停止记录', async t => {

@@ -18,7 +18,7 @@ function handle(operation) {
 async function stop() {
   const active = service
   service = null
-  await active?.stop()
+  await active?.close()
 }
 
 // 宿主正常停用走 deactivate；管道先关闭时也要收回内核。

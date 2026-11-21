@@ -46,7 +46,7 @@ Release 同时提供：
 | `catalog.json` | FISH-Dock 商店目录 schema 1 兼容元数据 |
 | `SHA256SUMS.txt` | 上述发布文件的校验值 |
 
-npm 包名为 `fish-dock-plugin-rayburst`。当 npm 安装的是 `1.1.0` 或更新版本时，安装包同样包含内核；以插件页显示的已装版本为准。
+想使用内置引擎，请优先下载上方 GitHub Release。也可以在 Dock 中安装 [npm 包 `fish-dock-plugin-rayburst`](https://www.npmjs.com/package/fish-dock-plugin-rayburst)，以插件页显示的已装版本为准：`1.0.x` 仍需外接 Rayburst，`1.1.0` 起才包含内置引擎。
 
 `catalog.json` 仅表示元数据格式兼容，不表示插件已被 FISH-Dock 官方商店收录。
 

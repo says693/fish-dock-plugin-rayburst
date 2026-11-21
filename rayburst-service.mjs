@@ -239,6 +239,8 @@ async function readOptional(storage, category, name) {
 }
 
 export class RayburstService {
+  #closed = false
+
   constructor(context, {
     engine = null,
     rpcFactory = config => new RayburstRpc(config),
@@ -279,12 +281,17 @@ export class RayburstService {
   }
 
   async rpc() {
+    if (this.#closed) fail('PLUGIN_CLOSED', '插件已停用')
     const { mode, port } = await this.connection()
+    // EOF 清理不经过 SDK 命令队列，读取配置期间服务可能已经永久关闭。
+    if (this.#closed) fail('PLUGIN_CLOSED', '插件已停用')
     if (mode === 'bundled') {
       if (!this.engine) fail('ENGINE_MISSING', '插件包缺少内置下载引擎，请重新导入完整安装包')
       return this.engine.rpc()
     }
-    return this.rpcFactory({ port, secret: await this.externalSecret() })
+    const secret = await this.externalSecret()
+    if (this.#closed) fail('PLUGIN_CLOSED', '插件已停用')
+    return this.rpcFactory({ port, secret })
   }
 
   async settings() {
@@ -313,6 +320,11 @@ export class RayburstService {
 
   async stop() {
     await this.engine?.stop()
+  }
+
+  close() {
+    this.#closed = true
+    return this.stop()
   }
 
   async testConnection() {
