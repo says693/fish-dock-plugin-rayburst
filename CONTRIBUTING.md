@@ -3,7 +3,7 @@
 ## 开发环境
 
 - Windows x64
-- Node.js 24
+- 开发、测试与打包：Node.js 24.15.0 或更高的 24.x，或 Node.js 26+（jsdom 31 的测试要求）。插件运行时仍使用 FISH-Dock 提供的 Node.js 24，不随开发依赖升级。
 - npm 11.17.0（发布工作流固定版本，满足 OIDC 的 npm >=11.5.1 要求）
 - `curl`、`tar`（仅构建时准备引擎；Windows 新版系统自带）
 

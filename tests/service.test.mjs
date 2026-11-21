@@ -189,14 +189,14 @@ test('管道关闭使服务失效，已兑现的配置读取也不能再启动�
   assert.deepEqual(lifecycle, ['stop'])
 })
 
-test('读外接凭据期间关闭服务时不再发起 RPC', async () => {
+test('读外接凭据期间关闭服务时不再发起 RPC', { timeout: 2000 }, async () => {
   const reading = Promise.withResolvers()
   const secret = Promise.withResolvers()
   let called = false
   const { service, ctx } = serviceFor(29101, {
     rpcFactory: () => ({ call: async () => { called = true; return {} } }),
   })
-  ctx.secrets.read = () => { reading.resolve(); return secret.promise }
+  ctx.secretsApi.read = () => { reading.resolve(); return secret.promise }
   const connecting = service.testConnection()
   await reading.promise
   await service.close()
