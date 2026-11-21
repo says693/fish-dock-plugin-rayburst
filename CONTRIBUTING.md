@@ -4,7 +4,7 @@
 
 - Windows x64
 - Node.js 24
-- npm 10 或更新版本
+- npm 11.17.0（发布工作流固定版本，满足 OIDC 的 npm >=11.5.1 要求）
 - `curl`、`tar`（仅构建时准备引擎；Windows 新版系统自带）
 
 ## 验证流程
@@ -34,8 +34,10 @@ npm run release:check -- v1.1.0
 1. 更新 `package.json`、`plugin.json` 和 `CHANGELOG.md` 的版本。
 2. 完整执行验证流程。
 3. 合并到 `main` 后创建 `vX.Y.Z` 标签并推送。
-4. Release 工作流会重新测试、验包并上传安装包、插件源码、内核对应源码、清单和校验文件。
-5. 先确认对应源码已随 GitHub Release 上传，再使用 `npm pack` 验证后发布 npm 包。更新内核版本时同步更新 `scripts/prepare-engine.mjs` 的固定来源及第三方声明。
+4. `release.yml` 在 GitHub 托管 Windows runner 上重新测试、验包并上传安装包、插件源码、内核对应源码、清单和校验文件；随后通过 npm OIDC 发布同一个已校验的包。发布时使用 `--ignore-scripts`，不重复执行 `prepack` 改变已验证文件。
+5. npm 包的 Settings → Trusted Publisher 必须绑定 GitHub 用户 `says693`、仓库 `fish-dock-plugin-rayburst`、工作流文件 `release.yml`，不设置 Environment name，并允许 `npm publish`。不用保存 `NPM_TOKEN` 或逐次输入 OTP；不要只允许 `npm stage publish`。
+6. 首次绑定后须在两天内完成一次成功发布。补发已存在标签时，从 `main` 手动运行 Release 工作流并填写该标签；不要重打或移动版本标签。npm 已发布的版本不可覆盖。
+7. 更新内核版本时同步更新 `scripts/prepare-engine.mjs` 的固定来源及第三方声明。
 
 ## 提交信息
 

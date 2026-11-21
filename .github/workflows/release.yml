@@ -11,7 +11,7 @@ on:
         type: string
 
 permissions:
-  contents: write
+  contents: read
 
 concurrency:
   group: rayburst-release
@@ -19,17 +19,31 @@ concurrency:
 
 jobs:
   release:
+    if: github.repository == 'says693/fish-dock-plugin-rayburst'
+    permissions:
+      contents: write
+      id-token: write
+    env:
+      RELEASE_TAG: ${{ github.event_name == 'workflow_dispatch' && inputs.tag || github.ref_name }}
     runs-on: windows-latest
     steps:
+      - name: Validate release tag
+        shell: pwsh
+        run: |
+          if ($env:RELEASE_TAG -cnotmatch '^v(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)$') { throw 'Expected vX.Y.Z release tag' }
       - name: Checkout release ref
         uses: actions/checkout@v7.0.1
         with:
-          ref: ${{ github.event_name == 'workflow_dispatch' && inputs.tag || github.ref }}
+          ref: refs/tags/${{ env.RELEASE_TAG }}
+          persist-credentials: false
       - name: Setup Node.js
         uses: actions/setup-node@v7.1.0
         with:
           node-version: 24
-          cache: npm
+          registry-url: https://registry.npmjs.org
+          package-manager-cache: false
+      - name: Setup trusted publishing CLI
+        run: npm install --global npm@11.17.0
       - name: Install development dependencies
         run: npm ci
       - name: Prepare pinned engine and corresponding source
@@ -45,15 +59,14 @@ jobs:
       - name: Validate version and release notes
         shell: pwsh
         run: |
-          $tag = "${{ github.event_name == 'workflow_dispatch' && inputs.tag || github.ref_name }}"
-          npm run release:check -- $tag
+          npm run release:check -- $env:RELEASE_TAG
           if ($LASTEXITCODE -ne 0) { throw "Release validation failed" }
       - name: Create or update GitHub Release
         shell: pwsh
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          $tag = "${{ github.event_name == 'workflow_dispatch' && inputs.tag || github.ref_name }}"
+          $tag = $env:RELEASE_TAG
           $engineSource = (Get-Content -Raw 'dist/manifest.json' | ConvertFrom-Json).engineSource.file
           $assets = @(
             "dist/rayburst.fish-plugin",
@@ -72,3 +85,5 @@ jobs:
             gh release create $tag $assets --repo $env:GITHUB_REPOSITORY --title "Rayburst FISH-Dock 插件 $tag" --notes-file "dist/RELEASE_NOTES.md" --verify-tag
           }
           if ($LASTEXITCODE -ne 0) { throw "Release publication failed" }
+      - name: Publish verified npm package with OIDC
+        run: npm publish --ignore-scripts --access public --provenance --registry=https://registry.npmjs.org
